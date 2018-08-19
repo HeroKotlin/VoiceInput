@@ -1,0 +1,405 @@
+package com.github.herokotlin.voiceinput
+
+import android.app.Activity
+import android.content.Context
+import android.content.pm.PackageManager
+import android.media.MediaPlayer
+import android.media.MediaRecorder
+import android.os.Environment
+import android.support.v4.app.ActivityCompat
+import android.support.v4.content.ContextCompat
+import android.util.Log
+import java.io.File
+import java.io.IOException
+import java.text.SimpleDateFormat
+import java.util.*
+
+class VoiceManager(private val context: Context) {
+
+    companion object {
+        const val LOG_TAG = "VoiceInput"
+        const val SECOND = 1000
+        const val PERMISSION_REQUEST_CODE = 12134
+    }
+
+    /**
+     * 是否正在录音
+     */
+    var isRecording = false
+
+    /**
+     * 是否正在播放录音
+     */
+    var isPlaying = false
+
+    /**
+     * 文件扩展名
+     */
+    var audioExtname = ".m4a"
+
+    /**
+     * 音频格式
+     */
+    var audioFormat = MediaRecorder.OutputFormat.MPEG_4
+
+    /**
+     * 音频编码器
+     */
+    var audioEncoder = MediaRecorder.AudioEncoder.HE_AAC
+
+    /**
+     * 双声道还是单声道
+     */
+    var numberOfChannels = 2
+
+    /**
+     * 码率
+     */
+    var audioBitRate = 320000
+
+    /**
+     * 采样率
+     */
+    var audioSampleRate = 44100
+
+    /**
+     * 保存录音文件的目录
+     */
+    var fileDir = context.externalCacheDir.absolutePath + "/voice_input"
+
+    /**
+     * 当前正在录音的文件路径
+     */
+    var filePath = ""
+
+    /**
+     * 录音文件的时长
+     */
+    var fileDuration = 0
+
+    /**
+     * 支持的最短录音时长
+     */
+    var minDuration = SECOND
+
+    /**
+     * 支持的最长录音时长
+     */
+    var maxDuration = 60 * SECOND
+
+    // 外部实时读取的录音时长
+    var duration: Long = 0
+
+        get() {
+            var duration = System.currentTimeMillis() - recordStartTime
+            if (duration > maxDuration) {
+                duration = maxDuration.toLong()
+                stopRecord()
+            }
+            return duration
+        }
+
+
+    // 外部实时读取的播放进度
+    var progress: Long = 0
+
+        get() {
+            return if (player != null) player!!.currentPosition.toLong() else 0
+        }
+
+    var onPermissionsGranted: (() -> Unit)? = null
+
+    var onPermissionsDenied: (() -> Unit)? = null
+
+    var onRecordWithoutPermissions: (() -> Unit)? = null
+
+    var onRecordWithoutExternalStorage: (() -> Unit)? = null
+
+    var onRecordDurationLessThanMinDuration: (() -> Unit)? = null
+
+    var onFinishRecord: ((success: Boolean) -> Unit)? = null
+
+    var onFinishPlay: ((success: Boolean) -> Unit)? = null
+
+    private var recorder: MediaRecorder? = null
+
+    private var player: MediaPlayer? = null
+
+    private var recordStartTime: Long = 0
+
+
+    /**
+     * 获取单项权限的结果
+     */
+    fun hasPermission(permission: String): Boolean {
+        return ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED
+    }
+
+    /**
+     * 判断是否有权限录音，如没有，发起授权请求
+     */
+    fun requestPermissions(): Boolean {
+
+        val permissions = arrayOf<String>()
+
+        if (!hasPermission(android.Manifest.permission.RECORD_AUDIO)) {
+            permissions.plus(android.Manifest.permission.RECORD_AUDIO)
+        }
+
+        if (!hasPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+            permissions.plus(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        }
+
+        if (permissions.count() > 0) {
+            ActivityCompat.requestPermissions(
+                context as Activity,
+                permissions,
+                PERMISSION_REQUEST_CODE
+            )
+            return false
+        }
+
+        return true
+
+    }
+
+    /**
+     * 如果触发了用户授权，则必须在 Activity 级别实现 onRequestPermissionsResult 接口，并调此方法完成授权
+     */
+    fun requestPermissionsResult(requestCode: Int, grantResults: IntArray) {
+
+        if (requestCode != PERMISSION_REQUEST_CODE) {
+            return
+        }
+
+        var hasPermission = false
+
+        val count = grantResults.count()
+        if (count == 2) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED
+                && grantResults[1] == PackageManager.PERMISSION_GRANTED
+            ) {
+                hasPermission = true
+            }
+        }
+        else if (count == 1) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED
+                || grantResults[0] == PackageManager.PERMISSION_GRANTED
+            ) {
+                hasPermission = true
+            }
+        }
+
+        if (hasPermission) {
+            onPermissionsGranted?.invoke()
+        }
+        else {
+            onPermissionsDenied?.invoke()
+        }
+
+    }
+
+    /**
+     * 检查外部存储是否可用，如不可用，无法录音
+     */
+    private fun checkExternalStorageAvailable(): Boolean {
+        val state = Environment.getExternalStorageState()
+        return state == Environment.MEDIA_MOUNTED
+    }
+
+    fun startRecord() {
+
+        if (!requestPermissions()) {
+            onRecordWithoutPermissions?.invoke()
+            throw Error("recorder has no permissions.")
+        }
+
+        if (!checkExternalStorageAvailable()) {
+            onRecordWithoutExternalStorage?.invoke()
+            throw Error("external storage is not available.")
+        }
+
+        // 确保目录存在
+        val file = File(fileDir)
+        if (!file.exists()) {
+            file.mkdir()
+        }
+
+        // 时间格式的文件名
+        val formater = SimpleDateFormat("yyyy-MM-dd-HH-mm-ss", Locale.US)
+
+        filePath = "$fileDir/${formater.format(Date())}$audioExtname"
+
+        Log.d(LOG_TAG, "record file path: $filePath")
+
+        fileDuration = 0
+
+        recorder = MediaRecorder()
+
+        recorder?.setAudioSource(MediaRecorder.AudioSource.MIC)
+
+        recorder?.setOutputFormat(audioFormat)
+        recorder?.setAudioEncoder(audioEncoder)
+        recorder?.setAudioChannels(numberOfChannels)
+        recorder?.setAudioEncodingBitRate(audioBitRate)
+        recorder?.setAudioSamplingRate(audioSampleRate)
+
+        recorder?.setOutputFile(filePath)
+
+        var isSuccess = false
+
+        try {
+            recorder?.prepare()
+            recorder?.start()
+            isSuccess = true
+        }
+        catch (e: IOException) {
+            Log.d(LOG_TAG, "IOException starting MediaRecorder: ${e.message}")
+        }
+        catch (e: IllegalStateException) {
+            Log.d(LOG_TAG, "IllegalStateException starting MediaRecorder: ${e.message}")
+        }
+        catch (e: RuntimeException) {
+            Log.d(LOG_TAG, "RuntimeException starting MediaRecorder: ${e.message}")
+        }
+
+        if (isSuccess) {
+            isRecording = true
+            recordStartTime = System.currentTimeMillis()
+        }
+        else {
+            deleteFile()
+        }
+
+    }
+
+    fun stopRecord() {
+
+        if (!isRecording) {
+            return
+        }
+
+        var isSuccess = false
+
+        try {
+            recorder?.stop()
+            recorder?.reset()
+            recorder?.release()
+
+            // 读取录音文件的时长
+            player = MediaPlayer()
+            player?.setDataSource(filePath)
+            player?.prepare()
+
+            fileDuration = player!!.duration
+
+            player?.reset()
+            player?.release()
+
+            isSuccess = true
+        }
+        catch (e: RuntimeException) {
+            Log.d(LOG_TAG, "RuntimeException stoping MediaRecorder: ${e.message}")
+        }
+        catch (e: IOException) {
+            Log.d(LOG_TAG, "IOException stoping MediaRecorder: ${e.message}")
+        }
+
+        if (isSuccess) {
+            if (fileDuration >= minDuration) {
+                onFinishRecord?.invoke(true)
+            }
+            else {
+                deleteFile()
+                onRecordDurationLessThanMinDuration?.invoke()
+                onFinishRecord?.invoke(false)
+            }
+            recorder = null
+            player = null
+        }
+        else {
+            deleteFile()
+        }
+
+        isRecording = false
+
+    }
+
+    fun startPlay() {
+
+        var isSuccess = false
+
+        player = MediaPlayer()
+
+        player?.setOnCompletionListener {
+            onFinishPlay?.invoke(true)
+        }
+
+        try {
+
+            player?.setDataSource(filePath)
+            player?.prepare()
+            player?.start()
+
+            isSuccess = true
+
+        }
+        catch (e: IOException) {
+            Log.d(LOG_TAG, "IOException starting MediaPlayer: ${e.message}")
+        }
+
+        if (isSuccess) {
+            isPlaying = true
+        }
+
+    }
+
+    fun stopPlay() {
+
+        if (!isPlaying) {
+            return
+        }
+
+        var isSuccess = false
+
+        try {
+            player?.stop()
+            player?.reset()
+            player?.release()
+
+            isSuccess = true
+        }
+        catch (e: IOException) {
+            player?.release()
+            Log.d(LOG_TAG, "IOException stoping MediaPlayer: ${e.message}")
+        }
+
+        player = null
+        isPlaying = false
+
+        onFinishPlay?.invoke(isSuccess)
+
+    }
+
+    fun deleteFile() {
+
+        if (filePath.isNotBlank()) {
+            val file = File(filePath)
+            if (file.exists()) {
+                Log.d(LOG_TAG, "delete file: $filePath")
+                file.delete()
+            }
+            filePath = ""
+        }
+
+        recorder?.reset()
+        recorder?.release()
+        recorder = null
+
+        player?.reset()
+        player?.release()
+        player = null
+
+    }
+
+}
