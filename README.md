@@ -18,7 +18,7 @@ Add the dependency
 
 ```
 dependencies {
-    implementation 'com.github.musicode:VoiceInput:0.0.9'
+    implementation 'com.github.herokotlin:VoiceInput:0.0.1'
 }
 ```
 
@@ -28,7 +28,7 @@ dependencies {
 ```
 
 ```xml
-<com.github.musicode.voiceinput.VoiceInput
+<com.github.herokotlin.voiceinput.VoiceInput
     android:id="@+id/voiceInput"
     android:layout_width="match_parent"
     android:layout_height="match_parent"/>
@@ -38,6 +38,7 @@ dependencies {
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import com.github.herokotlin.voiceinput.Callback
 import kotlinx.android.synthetic.main.activity_main.*
 import java.io.File
 
@@ -47,23 +48,18 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val savePath = externalCacheDir.absolutePath + "/audio_record"
-        val file = File(savePath)
-        if (!file.exists()) {
-            file.mkdir()
-        }
+        voiceInput.callback = object: Callback {
 
-        voiceInput.savePath = savePath
-        voiceInput.onRecordSuccess = { file, duration ->
-            val audio = File(file)
-            Log.d("VoiceInput", "${duration}, ${audio.length()}")
+            override fun onFinishRecord(filePath: String, duration: Int) {
+                val audio = File(filePath)
+                Log.d("VoiceInput", "${duration}, ${audio.length()}")
+            }
         }
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        voiceInput.requestPermissionsResult(this, requestCode, grantResults)
+        voiceInput.requestPermissionsResult(requestCode, grantResults)
     }
-
 }
 ```
