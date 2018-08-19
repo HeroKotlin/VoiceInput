@@ -18,7 +18,7 @@ Add the dependency
 
 ```
 dependencies {
-    implementation 'com.github.herokotlin:VoiceInput:0.0.1'
+    implementation 'com.github.HeroKotlin:VoiceInput:0.0.1'
 }
 ```
 
