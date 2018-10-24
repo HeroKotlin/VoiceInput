@@ -449,8 +449,8 @@ class VoiceInput : FrameLayout {
     /**
      * 请求麦克风权限
      */
-    fun requestPermissions() {
-        voiceManager.requestPermissions()
+    fun requestPermissions(): Boolean {
+        return voiceManager.requestPermissions()
     }
 
     /**
