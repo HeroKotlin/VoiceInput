@@ -5,6 +5,7 @@ import android.os.Handler
 import android.os.Message
 import android.support.v4.content.ContextCompat
 import android.util.AttributeSet
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.FrameLayout
@@ -63,7 +64,7 @@ class VoiceInput : FrameLayout {
                 deleteButton.centerColor = ContextCompat.getColor(context, R.color.voice_input_delete_button_bg_color_normal)
                 guideLabel.visibility = View.VISIBLE
                 durationLabel.visibility = View.GONE
-                guideLabel.text = resources.getString(R.string.voice_input_guide_preview)
+                guideLabel.text = resources.getString(R.string.voice_input_guide_normal)
             }
             previewButton.invalidate()
         }
@@ -167,7 +168,11 @@ class VoiceInput : FrameLayout {
         recordButton.callback = object: CircleViewCallback {
 
             override fun onTouchDown() {
-                // 弹出授权框，会打断流程，此时录音计时还在继续，如再次点击，因判断状态
+
+                if (!voiceManager.requestPermissions()) {
+                    return
+                }
+
                 if (voiceManager.isRecording) {
                     stopRecord()
                 }
@@ -291,6 +296,7 @@ class VoiceInput : FrameLayout {
 
             guideLabel.visibility = View.GONE
             durationLabel.visibility = View.VISIBLE
+            durationLabel.text = formatDuration(0)
 
             startTimer(100, DurationUpdateHandler(this))
 
@@ -331,8 +337,6 @@ class VoiceInput : FrameLayout {
 
         guideLabel.visibility = View.VISIBLE
         durationLabel.visibility = View.GONE
-
-        durationLabel.text = formatDuration(0)
 
     }
 

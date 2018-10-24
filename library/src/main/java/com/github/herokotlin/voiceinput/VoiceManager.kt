@@ -91,7 +91,8 @@ class VoiceManager(private val context: Context) {
     var duration: Long = 0
 
         get() {
-            var duration = System.currentTimeMillis() - recordStartTime
+            val now = System.currentTimeMillis()
+            var duration = now - recordStartTime
             if (duration > maxDuration) {
                 duration = maxDuration.toLong()
                 stopRecord()
@@ -140,17 +141,17 @@ class VoiceManager(private val context: Context) {
      */
     fun requestPermissions(): Boolean {
 
-        val permissions = arrayOf<String>()
+        var permissions = arrayOf<String>()
 
         if (!hasPermission(android.Manifest.permission.RECORD_AUDIO)) {
-            permissions.plus(android.Manifest.permission.RECORD_AUDIO)
+            permissions = permissions.plus(android.Manifest.permission.RECORD_AUDIO)
         }
 
         if (!hasPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-            permissions.plus(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            permissions = permissions.plus(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
         }
 
-        if (permissions.count() > 0) {
+        if (permissions.isNotEmpty()) {
             ActivityCompat.requestPermissions(
                 context as Activity,
                 permissions,
