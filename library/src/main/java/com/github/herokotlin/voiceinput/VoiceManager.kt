@@ -226,7 +226,7 @@ class VoiceManager(private val context: Context) {
         }
 
         // 时间格式的文件名
-        val formater = SimpleDateFormat("yyyy-MM-dd-HH-mm-ss", Locale.US)
+        val formater = SimpleDateFormat("yyyy_MM_dd_HH_mm_ss", Locale.US)
 
         filePath = "$fileDir/${formater.format(Date())}$audioExtname"
 
@@ -234,94 +234,101 @@ class VoiceManager(private val context: Context) {
 
         fileDuration = 0
 
-        recorder = MediaRecorder()
+        val recorder = MediaRecorder()
 
-        recorder?.setAudioSource(MediaRecorder.AudioSource.MIC)
+        recorder.setAudioSource(MediaRecorder.AudioSource.MIC)
 
-        recorder?.setOutputFormat(audioFormat)
-        recorder?.setAudioEncoder(audioEncoder)
-        recorder?.setAudioChannels(numberOfChannels)
-        recorder?.setAudioEncodingBitRate(audioBitRate)
-        recorder?.setAudioSamplingRate(audioSampleRate)
+        recorder.setOutputFormat(audioFormat)
+        recorder.setAudioEncoder(audioEncoder)
+        recorder.setAudioChannels(numberOfChannels)
+        recorder.setAudioEncodingBitRate(audioBitRate)
+        recorder.setAudioSamplingRate(audioSampleRate)
 
-        recorder?.setOutputFile(filePath)
+        recorder.setOutputFile(filePath)
 
         var isSuccess = false
 
         try {
-            recorder?.prepare()
-            recorder?.start()
+            recorder.prepare()
             isSuccess = true
         }
         catch (e: IOException) {
             Log.d(LOG_TAG, "IOException starting MediaRecorder: ${e.message}")
-        }
-        catch (e: IllegalStateException) {
-            Log.d(LOG_TAG, "IllegalStateException starting MediaRecorder: ${e.message}")
         }
         catch (e: RuntimeException) {
             Log.d(LOG_TAG, "RuntimeException starting MediaRecorder: ${e.message}")
         }
 
         if (isSuccess) {
+            recorder.start()
             isRecording = true
             recordStartTime = System.currentTimeMillis()
+            this.recorder = recorder
         }
         else {
-            deleteFile()
+            recorder.reset()
+            recorder.release()
         }
 
     }
 
     fun stopRecord() {
 
-        if (!isRecording) {
+        val recorder = this.recorder
+
+        if (!isRecording || recorder == null) {
             return
         }
 
         var isSuccess = false
 
         try {
-            recorder?.stop()
-            recorder?.reset()
-            recorder?.release()
-
-            // 读取录音文件的时长
-            player = MediaPlayer()
-            player?.setDataSource(filePath)
-            player?.prepare()
-
-            fileDuration = player!!.duration
-
-            player?.reset()
-            player?.release()
-
+            recorder.stop()
             isSuccess = true
         }
         catch (e: RuntimeException) {
+            // if no valid audio/video data has been received when stop() is called
+            // 比如点击完开始，立即点结束
             Log.d(LOG_TAG, "RuntimeException stoping MediaRecorder: ${e.message}")
         }
-        catch (e: IOException) {
-            Log.d(LOG_TAG, "IOException stoping MediaRecorder: ${e.message}")
+
+        recorder.reset()
+        recorder.release()
+
+        // recorder 无法读取到真实时长
+        // 因此接下来必须借助 MediaPlayer
+        if (isSuccess) {
+            val player = MediaPlayer()
+            try {
+                player.setDataSource(filePath)
+                player.prepare()
+
+                fileDuration = player.duration
+
+                player.reset()
+                player.release()
+
+                isSuccess = true
+            }
+            catch (e: Exception) {
+                Log.d(LOG_TAG, "read audio file duration error: ${e.message}")
+            }
         }
 
-        if (isSuccess) {
-            if (fileDuration >= minDuration) {
-                onFinishRecord?.invoke(true)
-            }
-            else {
-                deleteFile()
-                onRecordDurationLessThanMinDuration?.invoke()
-                onFinishRecord?.invoke(false)
-            }
-            recorder = null
-            player = null
+        if (isSuccess && fileDuration < minDuration) {
+            onRecordDurationLessThanMinDuration?.invoke()
+            isSuccess = false
         }
-        else {
+
+        if (!isSuccess) {
             deleteFile()
         }
 
+        this.recorder = null
+
         isRecording = false
+
+        onFinishRecord?.invoke(isSuccess)
 
     }
 
@@ -329,17 +336,17 @@ class VoiceManager(private val context: Context) {
 
         var isSuccess = false
 
-        player = MediaPlayer()
+        val player = MediaPlayer()
 
-        player?.setOnCompletionListener {
-            onFinishPlay?.invoke(true)
+        player.setOnCompletionListener {
+            stopPlay()
         }
 
         try {
 
-            player?.setDataSource(filePath)
-            player?.prepare()
-            player?.start()
+            player.setDataSource(filePath)
+            player.prepare()
+            player.start()
 
             isSuccess = true
 
@@ -350,55 +357,47 @@ class VoiceManager(private val context: Context) {
 
         if (isSuccess) {
             isPlaying = true
+            this.player = player
+        }
+        else {
+            player.reset()
+            player.release()
         }
 
     }
 
     fun stopPlay() {
 
-        if (!isPlaying) {
+        val player = this.player
+
+        if (!isPlaying || player == null) {
             return
         }
 
-        var isSuccess = false
+        player.stop()
+        player.reset()
+        player.release()
 
-        try {
-            player?.stop()
-            player?.reset()
-            player?.release()
+        this.player = null
 
-            isSuccess = true
-        }
-        catch (e: IOException) {
-            player?.release()
-            Log.d(LOG_TAG, "IOException stoping MediaPlayer: ${e.message}")
-        }
-
-        player = null
         isPlaying = false
 
-        onFinishPlay?.invoke(isSuccess)
+        onFinishPlay?.invoke(true)
 
     }
 
     fun deleteFile() {
 
-        if (filePath.isNotBlank()) {
-            val file = File(filePath)
-            if (file.exists()) {
-                Log.d(LOG_TAG, "delete file: $filePath")
-                file.delete()
-            }
-            filePath = ""
+        if (filePath.isBlank()) {
+            return
         }
 
-        recorder?.reset()
-        recorder?.release()
-        recorder = null
+        val file = File(filePath)
+        if (file.exists()) {
+            file.delete()
+        }
 
-        player?.reset()
-        player?.release()
-        player = null
+        filePath = ""
 
     }
 

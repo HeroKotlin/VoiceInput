@@ -8,8 +8,7 @@ import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.FrameLayout
-import com.github.herokotlin.circleview.Callback as CircleViewCallback
-import com.github.herokotlin.voiceinput.Callback as VoiceInputCallback
+import com.github.herokotlin.circleview.CircleViewCallback
 import kotlinx.android.synthetic.main.voice_input.view.*
 import java.lang.ref.WeakReference
 
@@ -38,7 +37,7 @@ class VoiceInput : FrameLayout {
                 guideLabel.text = resources.getString(R.string.voice_input_guide_preview)
             }
             else {
-                previewButton.centerColor = ContextCompat.getColor(context, R.color.voice_input_preview_button_bg_color)
+                previewButton.centerColor = ContextCompat.getColor(context, R.color.voice_input_preview_button_bg_color_normal)
                 guideLabel.visibility = View.GONE
                 durationLabel.visibility = View.VISIBLE
                 guideLabel.text = resources.getString(R.string.voice_input_guide_normal)
@@ -61,7 +60,7 @@ class VoiceInput : FrameLayout {
                 guideLabel.text = resources.getString(R.string.voice_input_guide_delete)
             }
             else {
-                deleteButton.centerColor = ContextCompat.getColor(context, R.color.voice_input_delete_button_bg_color)
+                deleteButton.centerColor = ContextCompat.getColor(context, R.color.voice_input_delete_button_bg_color_normal)
                 guideLabel.visibility = View.VISIBLE
                 durationLabel.visibility = View.GONE
                 guideLabel.text = resources.getString(R.string.voice_input_guide_preview)
@@ -209,7 +208,7 @@ class VoiceInput : FrameLayout {
             }
 
             override fun onTouchUp(inside: Boolean) {
-                playButton.centerColor = ContextCompat.getColor(context, R.color.voice_input_play_button_center_color)
+                playButton.centerColor = ContextCompat.getColor(context, R.color.voice_input_play_button_center_color_normal)
                 playButton.invalidate()
 
                 if (inside) {
@@ -228,7 +227,7 @@ class VoiceInput : FrameLayout {
             }
 
             override fun onTouchLeave() {
-                playButton.centerColor = ContextCompat.getColor(context, R.color.voice_input_play_button_center_color)
+                playButton.centerColor = ContextCompat.getColor(context, R.color.voice_input_play_button_center_color_normal)
                 playButton.invalidate()
             }
         }
@@ -324,7 +323,7 @@ class VoiceInput : FrameLayout {
         isPreviewButtonPressed = false
         isDeleteButtonPressed = false
 
-        recordButton.centerColor = ContextCompat.getColor(context, R.color.voice_input_record_button_bg_color)
+        recordButton.centerColor = ContextCompat.getColor(context, R.color.voice_input_record_button_bg_color_normal)
         recordButton.invalidate()
 
         previewButton.visibility = View.GONE
@@ -373,7 +372,9 @@ class VoiceInput : FrameLayout {
     }
 
     private fun onDurationUpdate() {
+
         durationLabel.text = formatDuration(voiceManager.duration)
+
     }
 
     private fun onProgressUpdate() {
@@ -389,14 +390,14 @@ class VoiceInput : FrameLayout {
 
             // 如果无限接近 1，可以认为是 1
             // 不然在结束时，可能出现 4000 / 4001 的尴尬局面
-            if (trackValue > 0.995) {
+            if (trackValue > 0.99) {
                 trackValue = 1f
             }
 
-            progressLabel.text = formatDuration(progress)
-
             playButton.trackValue = trackValue
             playButton.invalidate()
+
+            progressLabel.text = formatDuration(progress)
 
         }
 

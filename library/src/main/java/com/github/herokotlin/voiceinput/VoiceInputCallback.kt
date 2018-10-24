@@ -1,6 +1,6 @@
 package com.github.herokotlin.voiceinput
 
-interface Callback {
+interface VoiceInputCallback {
 
     // 点击录音按钮时，发现没权限
     fun onRecordWithoutPermissions() {

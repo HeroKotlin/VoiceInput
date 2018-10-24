@@ -9,7 +9,7 @@
 
     <item android:top="1px" android:left="1px">
         <shape>
-            <solid android:color="@color/voice_input_footer_button_bg_color"/>
+            <solid android:color="@color/voice_input_footer_button_bg_color_normal"/>
             <padding android:top="@dimen/voice_input_footer_button_padding_top"
                      android:bottom="@dimen/voice_input_footer_button_padding_bottom"/>
         </shape>

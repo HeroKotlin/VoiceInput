@@ -39,11 +39,12 @@
             android:layout_centerHorizontal="true"
             android:layout_centerVertical="true"
 
-            app:circle_view_center_color="@color/voice_input_record_button_bg_color"
+            app:circle_view_center_color="@color/voice_input_record_button_bg_color_normal"
             app:circle_view_center_radius="@dimen/voice_input_record_button_radius"
             app:circle_view_center_image="@drawable/voice_input_mic"
 
-            app:circle_view_ring_width="0dp"
+            app:circle_view_ring_width="@dimen/voice_input_record_button_border_width"
+            app:circle_view_ring_color="@color/voice_input_record_button_border_color"
             app:circle_view_track_width="0dp"
             app:circle_view_track_value="0"/>
 
@@ -57,7 +58,7 @@
             android:layout_marginRight="@dimen/voice_input_preview_button_margin_right"
             android:visibility="gone"
 
-            app:circle_view_center_color="@color/voice_input_preview_button_bg_color"
+            app:circle_view_center_color="@color/voice_input_preview_button_bg_color_normal"
             app:circle_view_center_radius="@dimen/voice_input_preview_button_radius"
             app:circle_view_center_image="@drawable/voice_input_preview"
 
@@ -75,7 +76,7 @@
             android:layout_marginLeft="@dimen/voice_input_delete_button_margin_left"
             android:visibility="gone"
 
-            app:circle_view_center_color="@color/voice_input_delete_button_bg_color"
+            app:circle_view_center_color="@color/voice_input_delete_button_bg_color_normal"
             app:circle_view_center_radius="@dimen/voice_input_delete_button_radius"
             app:circle_view_center_image="@drawable/voice_input_delete"
 
@@ -110,7 +111,7 @@
             android:layout_centerHorizontal="true"
             android:layout_centerVertical="true"
 
-            app:circle_view_center_color="@color/voice_input_play_button_center_color"
+            app:circle_view_center_color="@color/voice_input_play_button_center_color_normal"
             app:circle_view_center_radius="@dimen/voice_input_play_button_center_radius"
             app:circle_view_center_image="@drawable/voice_input_play"
 

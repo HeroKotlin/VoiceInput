@@ -1,21 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <color name="voice_input_record_button_bg_color">#19B4ED</color>
+    <color name="voice_input_record_button_bg_color_normal">#19B4ED</color>
     <color name="voice_input_record_button_bg_color_pressed">#009ED8</color>
+    <color name="voice_input_record_button_border_color">#BBB</color>
 
-    <color name="voice_input_preview_button_bg_color">#FFF</color>
+    <color name="voice_input_preview_button_bg_color_normal">#FFF</color>
     <color name="voice_input_preview_button_bg_color_hover">#F3F3F3</color>
     <color name="voice_input_preview_button_border_color">#BBB</color>
 
-    <color name="voice_input_delete_button_bg_color">#FFF</color>
+    <color name="voice_input_delete_button_bg_color_normal">#FFF</color>
     <color name="voice_input_delete_button_bg_color_hover">#F3F3F3</color>
     <color name="voice_input_delete_button_border_color">#BBB</color>
 
     <color name="voice_input_guide_label_text_color">#AAA</color>
     <color name="voice_input_duration_label_text_color">#AAA</color>
 
-    <color name="voice_input_play_button_center_color">#fff</color>
+    <color name="voice_input_play_button_center_color_normal">#fff</color>
     <color name="voice_input_play_button_center_color_pressed">#f0f0f0</color>
     <color name="voice_input_play_button_ring_color">#dadada</color>
     <color name="voice_input_play_button_track_color">#18B4ED</color>
@@ -23,8 +24,8 @@
     <color name="voice_input_progress_label_text_color">#AAA</color>
 
     <color name="voice_input_footer_button_border_color">#bbb</color>
-    <color name="voice_input_footer_button_text_color">#18B4ED</color>
-    <color name="voice_input_footer_button_bg_color">#fff</color>
+    <color name="voice_input_footer_button_text_color">#666</color>
+    <color name="voice_input_footer_button_bg_color_normal">#fff</color>
     <color name="voice_input_footer_button_bg_color_pressed">#f0f0f0</color>
 
 </resources>
