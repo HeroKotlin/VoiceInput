@@ -212,26 +212,15 @@ class VoiceManager(private val context: Context) {
 
         if (!requestPermissions()) {
             onRecordWithoutPermissions?.invoke()
-            throw Error("recorder has no permissions.")
+            return
         }
 
         if (!checkExternalStorageAvailable()) {
             onRecordWithoutExternalStorage?.invoke()
-            throw Error("external storage is not available.")
+            return
         }
 
-        // 确保目录存在
-        val file = File(fileDir)
-        if (!file.exists()) {
-            file.mkdir()
-        }
-
-        // 时间格式的文件名
-        val formater = SimpleDateFormat("yyyy_MM_dd_HH_mm_ss", Locale.US)
-
-        filePath = "$fileDir/${formater.format(Date())}$audioExtname"
-
-        Log.d(LOG_TAG, "record file path: $filePath")
+        filePath = getFilePath(fileDir, audioExtname)
 
         fileDuration = 0
 
@@ -312,7 +301,8 @@ class VoiceManager(private val context: Context) {
                 isSuccess = true
             }
             catch (e: Exception) {
-                Log.d(LOG_TAG, "read audio file duration error: ${e.message}")
+                isSuccess = false
+                onRecordWithoutPermissions?.invoke()
             }
         }
 
@@ -399,6 +389,21 @@ class VoiceManager(private val context: Context) {
         }
 
         filePath = ""
+
+    }
+
+    fun getFilePath(dirname: String, extname: String): String {
+
+        // 确保目录存在
+        val file = File(dirname)
+        if (!file.exists()) {
+            file.mkdir()
+        }
+
+        // 时间格式的文件名
+        val formater = SimpleDateFormat("yyyy_MM_dd_HH_mm_ss", Locale.US)
+
+        return "$dirname/${formater.format(Date())}$extname"
 
     }
 

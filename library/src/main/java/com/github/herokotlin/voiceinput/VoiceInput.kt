@@ -168,21 +168,13 @@ class VoiceInput : FrameLayout {
         recordButton.callback = object: CircleViewCallback {
 
             override fun onTouchDown() {
+                startRecord()
+            }
 
-                if (!voiceManager.requestPermissions()) {
-                    return
-                }
-
+            override fun onTouchUp(inside: Boolean, isLongPress: Boolean) {
                 if (voiceManager.isRecording) {
                     stopRecord()
                 }
-                else {
-                    startRecord()
-                }
-            }
-
-            override fun onTouchUp(inside: Boolean) {
-                stopRecord()
             }
 
             override fun onTouchMove(x: Float, y: Float) {
@@ -212,7 +204,7 @@ class VoiceInput : FrameLayout {
                 playButton.invalidate()
             }
 
-            override fun onTouchUp(inside: Boolean) {
+            override fun onTouchUp(inside: Boolean, isLongPress: Boolean) {
                 playButton.centerColor = ContextCompat.getColor(context, R.color.voice_input_play_button_center_color_normal)
                 playButton.invalidate()
 
@@ -347,7 +339,9 @@ class VoiceInput : FrameLayout {
         if (voiceManager.isPlaying) {
             playButton.centerImage = R.drawable.voice_input_stop
             playButton.invalidate()
-            startTimer(1000 / 60, ProgressUpdateHandler(this))
+            // interval 设小一点才能看到进度条走完
+            // 否则就是还剩一段就结束了
+            startTimer(1000 / 200, ProgressUpdateHandler(this))
         }
     }
 

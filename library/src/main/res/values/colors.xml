@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <color name="voice_input_record_button_bg_color_normal">#19B4ED</color>
-    <color name="voice_input_record_button_bg_color_pressed">#009ED8</color>
+    <color name="voice_input_record_button_bg_color_normal">#ff9b00</color>
+    <color name="voice_input_record_button_bg_color_pressed">#fc8f03</color>
     <color name="voice_input_record_button_border_color">#BBB</color>
 
     <color name="voice_input_preview_button_bg_color_normal">#FFF</color>
@@ -19,7 +19,7 @@
     <color name="voice_input_play_button_center_color_normal">#fff</color>
     <color name="voice_input_play_button_center_color_pressed">#f0f0f0</color>
     <color name="voice_input_play_button_ring_color">#dadada</color>
-    <color name="voice_input_play_button_track_color">#18B4ED</color>
+    <color name="voice_input_play_button_track_color">#ff9b00</color>
 
     <color name="voice_input_progress_label_text_color">#AAA</color>
 
