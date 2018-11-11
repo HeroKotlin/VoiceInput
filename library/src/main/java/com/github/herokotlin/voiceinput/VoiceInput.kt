@@ -8,6 +8,7 @@ import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.FrameLayout
+import com.github.herokotlin.circleview.CircleView
 import com.github.herokotlin.circleview.CircleViewCallback
 import kotlinx.android.synthetic.main.voice_input.view.*
 import java.lang.ref.WeakReference
@@ -166,17 +167,17 @@ class VoiceInput : FrameLayout {
 
         recordButton.callback = object: CircleViewCallback {
 
-            override fun onTouchDown() {
+            override fun onTouchDown(circleView: CircleView) {
                 startRecord()
             }
 
-            override fun onTouchUp(inside: Boolean, isLongPress: Boolean) {
+            override fun onTouchUp(circleView: CircleView, inside: Boolean, isLongPress: Boolean) {
                 if (voiceManager.isRecording) {
                     stopRecord()
                 }
             }
 
-            override fun onTouchMove(x: Float, y: Float) {
+            override fun onTouchMove(circleView: CircleView, x: Float, y: Float) {
 
                 val offsetY = y - recordButtonRadius
 
@@ -198,14 +199,14 @@ class VoiceInput : FrameLayout {
 
         playButton.callback = object: CircleViewCallback {
 
-            override fun onTouchDown() {
-                playButton.centerColor = ContextCompat.getColor(context, R.color.voice_input_play_button_center_color_pressed)
-                playButton.invalidate()
+            override fun onTouchDown(circleView: CircleView) {
+                circleView.centerColor = ContextCompat.getColor(context, R.color.voice_input_play_button_center_color_pressed)
+                circleView.invalidate()
             }
 
-            override fun onTouchUp(inside: Boolean, isLongPress: Boolean) {
-                playButton.centerColor = ContextCompat.getColor(context, R.color.voice_input_play_button_center_color_normal)
-                playButton.invalidate()
+            override fun onTouchUp(circleView: CircleView, inside: Boolean, isLongPress: Boolean) {
+                circleView.centerColor = ContextCompat.getColor(context, R.color.voice_input_play_button_center_color_normal)
+                circleView.invalidate()
 
                 if (inside) {
                     if (voiceManager.isPlaying) {
@@ -217,14 +218,14 @@ class VoiceInput : FrameLayout {
                 }
             }
 
-            override fun onTouchEnter() {
-                playButton.centerColor = ContextCompat.getColor(context, R.color.voice_input_play_button_center_color_pressed)
-                playButton.invalidate()
+            override fun onTouchEnter(circleView: CircleView) {
+                circleView.centerColor = ContextCompat.getColor(context, R.color.voice_input_play_button_center_color_pressed)
+                circleView.invalidate()
             }
 
-            override fun onTouchLeave() {
-                playButton.centerColor = ContextCompat.getColor(context, R.color.voice_input_play_button_center_color_normal)
-                playButton.invalidate()
+            override fun onTouchLeave(circleView: CircleView) {
+                circleView.centerColor = ContextCompat.getColor(context, R.color.voice_input_play_button_center_color_normal)
+                circleView.invalidate()
             }
         }
 
