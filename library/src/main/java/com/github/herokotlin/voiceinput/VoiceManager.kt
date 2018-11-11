@@ -65,7 +65,7 @@ class VoiceManager(private val context: Context) {
     /**
      * 保存录音文件的目录
      */
-    var fileDir = context.externalCacheDir.absolutePath + "/voice_input"
+    var fileDir = context.externalCacheDir.absolutePath
 
     /**
      * 当前正在录音的文件路径
@@ -403,7 +403,13 @@ class VoiceManager(private val context: Context) {
         // 时间格式的文件名
         val formater = SimpleDateFormat("yyyy_MM_dd_HH_mm_ss", Locale.US)
 
-        return "$dirname/${formater.format(Date())}$extname"
+        val filename = "${formater.format(Date())}$extname"
+
+        if (dirname.endsWith("/")) {
+            return dirname + filename
+        }
+
+        return "$dirname/$filename"
 
     }
 
