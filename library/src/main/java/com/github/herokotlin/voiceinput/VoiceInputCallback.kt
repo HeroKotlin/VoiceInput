@@ -8,7 +8,7 @@ interface VoiceInputCallback {
     }
 
     // 录音结束或点击发送时触发
-    fun onFinishRecord(filePath: String, duration: Int) {
+    fun onFinishRecord(audioPath: String, audioDuration: Int) {
 
     }
 

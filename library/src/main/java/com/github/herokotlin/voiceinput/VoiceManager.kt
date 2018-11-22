@@ -240,17 +240,17 @@ class VoiceManager(private val context: Context) {
 
         try {
             recorder.prepare()
+            recorder.start()
             isSuccess = true
         }
         catch (e: IOException) {
             Log.d(LOG_TAG, "IOException starting MediaRecorder: ${e.message}")
         }
-        catch (e: RuntimeException) {
+        catch (e: IllegalStateException) {
             Log.d(LOG_TAG, "RuntimeException starting MediaRecorder: ${e.message}")
         }
 
         if (isSuccess) {
-            recorder.start()
             isRecording = true
             recordStartTime = System.currentTimeMillis()
             this.recorder = recorder
