@@ -7,6 +7,11 @@ interface VoiceInputCallback {
 
     }
 
+    // 预览发生变化
+    fun onPreviewingChange(isPreviewing: Boolean) {
+
+    }
+
     // 录音结束或点击发送时触发
     fun onFinishRecord(audioPath: String, audioDuration: Int) {
 

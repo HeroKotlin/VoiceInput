@@ -19,7 +19,7 @@ class VoiceInput : FrameLayout {
         private const val MESSAGE_TIME_UPDATE = 12134
     }
 
-    var callback: VoiceInputCallback? = null
+    lateinit var callback: VoiceInputCallback
 
     private var voiceManager = VoiceManager(context)
 
@@ -88,6 +88,7 @@ class VoiceInput : FrameLayout {
                 recordView.visibility = View.VISIBLE
                 previewView.visibility = View.GONE
             }
+            callback.onPreviewingChange(value)
         }
 
     // 参考 https://blog.csdn.net/qq_38355313/article/details/79082837
@@ -238,19 +239,19 @@ class VoiceInput : FrameLayout {
         }
 
         voiceManager.onPermissionsGranted = {
-            callback?.onPermissionsGranted()
+            callback.onPermissionsGranted()
         }
         voiceManager.onPermissionsDenied = {
-            callback?.onPermissionsDenied()
+            callback.onPermissionsDenied()
         }
         voiceManager.onRecordWithoutPermissions = {
-            callback?.onRecordWithoutPermissions()
+            callback.onRecordWithoutPermissions()
         }
         voiceManager.onRecordWithoutExternalStorage = {
-            callback?.onRecordWithoutExternalStorage()
+            callback.onRecordWithoutExternalStorage()
         }
         voiceManager.onRecordDurationLessThanMinDuration = {
-            callback?.onRecordDurationLessThanMinDuration()
+            callback.onRecordDurationLessThanMinDuration()
         }
         voiceManager.onFinishRecord = {
             finishRecord()
