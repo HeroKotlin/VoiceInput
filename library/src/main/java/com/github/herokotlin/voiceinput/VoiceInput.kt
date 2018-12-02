@@ -19,9 +19,11 @@ class VoiceInput : FrameLayout {
         private const val MESSAGE_TIME_UPDATE = 12134
     }
 
+    lateinit var configuration: VoiceInputConfiguration
+
     lateinit var callback: VoiceInputCallback
 
-    private var voiceManager = VoiceManager(context)
+    private var voiceManager = VoiceManager()
 
     private var isPreviewButtonPressed = false
 
@@ -152,6 +154,11 @@ class VoiceInput : FrameLayout {
         init()
     }
 
+    fun init(configuration: VoiceInputConfiguration, callback: VoiceInputCallback) {
+        this.configuration = configuration
+        this.callback = callback
+    }
+
     private fun init() {
 
         LayoutInflater.from(context).inflate(R.layout.voice_input, this)
@@ -277,7 +284,7 @@ class VoiceInput : FrameLayout {
 
     private fun startRecord() {
 
-        voiceManager.startRecord()
+        voiceManager.startRecord(configuration)
 
         if (voiceManager.isRecording) {
 
@@ -435,17 +442,10 @@ class VoiceInput : FrameLayout {
     }
 
     /**
-     * 获取单项权限的结果
-     */
-    fun hasPermission(permission: String): Boolean {
-        return voiceManager.hasPermission(permission)
-    }
-
-    /**
      * 请求麦克风权限
      */
     fun requestPermissions(): Boolean {
-        return voiceManager.requestPermissions()
+        return voiceManager.requestPermissions(configuration)
     }
 
     /**

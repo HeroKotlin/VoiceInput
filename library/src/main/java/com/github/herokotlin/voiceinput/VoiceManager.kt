@@ -1,20 +1,16 @@
 package com.github.herokotlin.voiceinput
 
-import android.app.Activity
-import android.content.Context
 import android.content.pm.PackageManager
 import android.media.MediaPlayer
 import android.media.MediaRecorder
 import android.os.Environment
-import android.support.v4.app.ActivityCompat
-import android.support.v4.content.ContextCompat
 import android.util.Log
 import java.io.File
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
 
-class VoiceManager(private val context: Context) {
+class VoiceManager {
 
     companion object {
         const val LOG_TAG = "VoiceInput"
@@ -31,11 +27,6 @@ class VoiceManager(private val context: Context) {
      * 是否正在播放录音
      */
     var isPlaying = false
-
-    /**
-     * 文件扩展名
-     */
-    var audioExtname = ".m4a"
 
     /**
      * 音频格式
@@ -61,11 +52,6 @@ class VoiceManager(private val context: Context) {
      * 采样率
      */
     var audioSampleRate = 44100
-
-    /**
-     * 保存录音文件的目录
-     */
-    var fileDir = context.externalCacheDir.absolutePath
 
     /**
      * 当前正在录音的文件路径
@@ -128,40 +114,17 @@ class VoiceManager(private val context: Context) {
 
     private var recordStartTime: Long = 0
 
-
-    /**
-     * 获取单项权限的结果
-     */
-    fun hasPermission(permission: String): Boolean {
-        return ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED
-    }
-
     /**
      * 判断是否有权限录音，如没有，发起授权请求
      */
-    fun requestPermissions(): Boolean {
-
-        var permissions = arrayOf<String>()
-
-        if (!hasPermission(android.Manifest.permission.RECORD_AUDIO)) {
-            permissions = permissions.plus(android.Manifest.permission.RECORD_AUDIO)
-        }
-
-        if (!hasPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-            permissions = permissions.plus(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
-        }
-
-        if (permissions.isNotEmpty()) {
-            ActivityCompat.requestPermissions(
-                context as Activity,
-                permissions,
-                PERMISSION_REQUEST_CODE
-            )
-            return false
-        }
-
-        return true
-
+    fun requestPermissions(configuration: VoiceInputConfiguration): Boolean {
+        return configuration.requestPermissions(
+            listOf(
+                android.Manifest.permission.RECORD_AUDIO,
+                android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+            ),
+            PERMISSION_REQUEST_CODE
+        )
     }
 
     /**
@@ -208,9 +171,9 @@ class VoiceManager(private val context: Context) {
         return state == Environment.MEDIA_MOUNTED
     }
 
-    fun startRecord() {
+    fun startRecord(configuration: VoiceInputConfiguration) {
 
-        if (!requestPermissions()) {
+        if (!requestPermissions(configuration)) {
             onRecordWithoutPermissions?.invoke()
             return
         }
@@ -220,7 +183,7 @@ class VoiceManager(private val context: Context) {
             return
         }
 
-        filePath = getFilePath(fileDir, audioExtname)
+        filePath = getFilePath(configuration.fileDir, configuration.fileExtname)
 
         fileDuration = 0
 
