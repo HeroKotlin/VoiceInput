@@ -130,36 +130,20 @@ class VoiceManager {
     /**
      * 如果触发了用户授权，则必须在 Activity 级别实现 onRequestPermissionsResult 接口，并调此方法完成授权
      */
-    fun requestPermissionsResult(requestCode: Int, grantResults: IntArray) {
+    fun requestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
 
         if (requestCode != PERMISSION_REQUEST_CODE) {
             return
         }
 
-        var hasPermission = false
-
-        val count = grantResults.count()
-        if (count == 2) {
-            if (grantResults[0] == PackageManager.PERMISSION_GRANTED
-                && grantResults[1] == PackageManager.PERMISSION_GRANTED
-            ) {
-                hasPermission = true
-            }
-        }
-        else if (count == 1) {
-            if (grantResults[0] == PackageManager.PERMISSION_GRANTED
-                || grantResults[0] == PackageManager.PERMISSION_GRANTED
-            ) {
-                hasPermission = true
+        for (i in 0 until permissions.size) {
+            if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
+                onPermissionsDenied?.invoke()
+                return
             }
         }
 
-        if (hasPermission) {
-            onPermissionsGranted?.invoke()
-        }
-        else {
-            onPermissionsDenied?.invoke()
-        }
+        onPermissionsGranted?.invoke()
 
     }
 

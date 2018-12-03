@@ -451,8 +451,8 @@ class VoiceInput : FrameLayout {
     /**
      * 如果触发了用户授权，则必须在 Activity 级别实现 onRequestPermissionsResult 接口，并调此方法完成授权
      */
-    fun requestPermissionsResult(requestCode: Int, grantResults: IntArray) {
-        voiceManager.requestPermissionsResult(requestCode, grantResults)
+    fun requestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        voiceManager.requestPermissionsResult(requestCode, permissions, grantResults)
     }
 
 }
