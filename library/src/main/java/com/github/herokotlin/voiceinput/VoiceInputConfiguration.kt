@@ -2,7 +2,7 @@ package com.github.herokotlin.voiceinput
 
 import android.content.Context
 
-abstract class VoiceInputConfiguration(context: Context) {
+abstract class VoiceInputConfiguration(val context: Context) {
 
     /**
      * 保存录音文件的目录
