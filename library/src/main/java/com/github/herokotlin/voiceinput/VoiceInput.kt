@@ -157,6 +157,7 @@ class VoiceInput : FrameLayout {
     fun init(configuration: VoiceInputConfiguration, callback: VoiceInputCallback) {
         this.configuration = configuration
         this.callback = callback
+        voiceManager.configuration = configuration
     }
 
     private fun init() {
@@ -284,7 +285,7 @@ class VoiceInput : FrameLayout {
 
     private fun startRecord() {
 
-        voiceManager.startRecord(configuration)
+        voiceManager.startRecord()
 
         if (voiceManager.isRecording) {
 
@@ -322,7 +323,7 @@ class VoiceInput : FrameLayout {
                 voiceManager.deleteFile()
             }
             else {
-                callback?.onFinishRecord(voiceManager.filePath, voiceManager.fileDuration)
+                callback.onFinishRecord(voiceManager.filePath, voiceManager.fileDuration)
             }
         }
 
@@ -418,7 +419,7 @@ class VoiceInput : FrameLayout {
     private fun send() {
         stopPlay()
         isPreviewing = false
-        callback?.onFinishRecord(voiceManager.filePath, voiceManager.fileDuration)
+        callback.onFinishRecord(voiceManager.filePath, voiceManager.fileDuration)
     }
 
     /**
@@ -445,7 +446,7 @@ class VoiceInput : FrameLayout {
      * 请求麦克风权限
      */
     fun requestPermissions(): Boolean {
-        return voiceManager.requestPermissions(configuration)
+        return voiceManager.requestPermissions()
     }
 
     /**
