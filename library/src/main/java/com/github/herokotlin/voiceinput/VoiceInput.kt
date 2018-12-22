@@ -1,29 +1,26 @@
 package com.github.herokotlin.voiceinput
 
+import android.animation.ValueAnimator
 import android.content.Context
-import android.os.Handler
-import android.os.Message
 import android.support.v4.content.ContextCompat
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
+import android.view.animation.LinearInterpolator
 import android.widget.FrameLayout
 import com.github.herokotlin.circleview.CircleView
 import com.github.herokotlin.circleview.CircleViewCallback
 import kotlinx.android.synthetic.main.voice_input.view.*
-import java.lang.ref.WeakReference
 
 class VoiceInput : FrameLayout {
-
-    companion object {
-        private const val MESSAGE_TIME_UPDATE = 12134
-    }
 
     lateinit var configuration: VoiceInputConfiguration
 
     lateinit var callback: VoiceInputCallback
 
     private var voiceManager = VoiceManager()
+
+    private var animator: ValueAnimator? = null
 
     private var isPreviewButtonPressed = false
 
@@ -92,55 +89,6 @@ class VoiceInput : FrameLayout {
             }
             callback.onPreviewingChange(value)
         }
-
-    // 参考 https://blog.csdn.net/qq_38355313/article/details/79082837
-    private class DurationUpdateHandler(voiceInput: VoiceInput) : Handler() {
-
-        private val instance: WeakReference<VoiceInput> = WeakReference(voiceInput)
-
-        override fun handleMessage(msg: Message?) {
-            val voiceInput = instance.get()
-            if (voiceInput != null && msg?.what == MESSAGE_TIME_UPDATE) {
-                voiceInput.onDurationUpdate()
-            }
-        }
-    }
-
-    private class ProgressUpdateHandler(voiceInput: VoiceInput) : Handler() {
-
-        private val instance: WeakReference<VoiceInput> = WeakReference(voiceInput)
-
-        override fun handleMessage(msg: Message?) {
-            val voiceInput = instance.get()
-            if (voiceInput != null && msg?.what == MESSAGE_TIME_UPDATE) {
-                voiceInput.onProgressUpdate()
-            }
-        }
-    }
-
-    private class TimeThread(voiceInput: VoiceInput, private val interval: Long) : Thread() {
-        private val instance: WeakReference<VoiceInput> = WeakReference(voiceInput)
-        var running = true
-        override fun run() {
-            do {
-                if (running) {
-                    val voiceInput = instance.get()
-                    if (voiceInput != null) {
-                        Thread.sleep(interval)
-                        voiceInput.timerHandler?.sendEmptyMessage(MESSAGE_TIME_UPDATE)
-                    }
-                }
-                else {
-                    break
-                }
-            }
-            while (true)
-        }
-    }
-
-    private var timerHandler: Handler? = null
-
-    private var timer: TimeThread? = null
 
     constructor(context: Context) : super(context) {
         init()
@@ -270,19 +218,6 @@ class VoiceInput : FrameLayout {
 
     }
 
-    private fun startTimer(interval: Long, handler: Handler) {
-        timer = TimeThread(this, interval)
-        timerHandler = handler
-        timer?.start()
-    }
-
-    private fun stopTimer() {
-        timer?.running = false
-        timer?.join()
-        timer = null
-        timerHandler = null
-    }
-
     private fun startRecord() {
 
         voiceManager.startRecord()
@@ -299,7 +234,17 @@ class VoiceInput : FrameLayout {
             durationLabel.visibility = View.VISIBLE
             durationLabel.text = formatDuration(0)
 
-            startTimer(100, DurationUpdateHandler(this))
+            val animator = ValueAnimator.ofInt(0, 1)
+            animator.duration = configuration.audioMaxDuration.toLong()
+            animator.interpolator = LinearInterpolator()
+
+            animator.addUpdateListener {
+                onDurationUpdate()
+            }
+
+            animator.start()
+
+            this.animator = animator
 
         }
 
@@ -313,17 +258,19 @@ class VoiceInput : FrameLayout {
 
     private fun finishRecord() {
 
-        stopTimer()
+        animator?.cancel()
 
         if (voiceManager.filePath.isNotBlank()) {
-            if (isPreviewButtonPressed) {
-                isPreviewing = true
-            }
-            else if (isDeleteButtonPressed) {
-                voiceManager.deleteFile()
-            }
-            else {
-                callback.onFinishRecord(voiceManager.filePath, voiceManager.fileDuration)
+            when {
+                isPreviewButtonPressed -> {
+                    isPreviewing = true
+                }
+                isDeleteButtonPressed -> {
+                    voiceManager.deleteFile()
+                }
+                else -> {
+                    callback.onFinishRecord(voiceManager.filePath, voiceManager.fileDuration)
+                }
             }
         }
 
@@ -346,11 +293,23 @@ class VoiceInput : FrameLayout {
         voiceManager.startPlay()
 
         if (voiceManager.isPlaying) {
+
             playButton.centerImage = R.drawable.voice_input_stop
             playButton.invalidate()
-            // interval 设小一点才能看到进度条走完
-            // 否则就是还剩一段就结束了
-            startTimer(1000 / 200, ProgressUpdateHandler(this))
+
+            val animator = ValueAnimator.ofInt(0, 1)
+            // 多加 500，确保进度条能走完
+            animator.duration = voiceManager.fileDuration.toLong() + 500
+            animator.interpolator = LinearInterpolator()
+
+            animator.addUpdateListener {
+                onProgressUpdate()
+            }
+
+            animator.start()
+
+            this.animator = animator
+
         }
     }
 
@@ -362,7 +321,7 @@ class VoiceInput : FrameLayout {
 
     private fun finishPlay() {
 
-        stopTimer()
+        animator?.cancel()
 
         resetPreviewView()
 
