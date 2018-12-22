@@ -34,13 +34,13 @@ class VoiceInput : FrameLayout {
                 previewButton.centerColor = ContextCompat.getColor(context, R.color.voice_input_preview_button_bg_color_hover)
                 guideLabel.visibility = View.VISIBLE
                 durationLabel.visibility = View.GONE
-                guideLabel.text = resources.getString(R.string.voice_input_guide_preview)
+                guideLabel.text = resources.getString(R.string.voice_input_guide_label_preview)
             }
             else {
                 previewButton.centerColor = ContextCompat.getColor(context, R.color.voice_input_preview_button_bg_color_normal)
                 guideLabel.visibility = View.GONE
                 durationLabel.visibility = View.VISIBLE
-                guideLabel.text = resources.getString(R.string.voice_input_guide_normal)
+                guideLabel.text = resources.getString(R.string.voice_input_guide_label_normal)
             }
             previewButton.invalidate()
         }
@@ -57,13 +57,13 @@ class VoiceInput : FrameLayout {
                 deleteButton.centerColor = ContextCompat.getColor(context, R.color.voice_input_delete_button_bg_color_hover)
                 guideLabel.visibility = View.VISIBLE
                 durationLabel.visibility = View.GONE
-                guideLabel.text = resources.getString(R.string.voice_input_guide_delete)
+                guideLabel.text = resources.getString(R.string.voice_input_guide_label_delete)
             }
             else {
                 deleteButton.centerColor = ContextCompat.getColor(context, R.color.voice_input_delete_button_bg_color_normal)
                 guideLabel.visibility = View.VISIBLE
                 durationLabel.visibility = View.GONE
-                guideLabel.text = resources.getString(R.string.voice_input_guide_normal)
+                guideLabel.text = resources.getString(R.string.voice_input_guide_label_normal)
             }
             previewButton.invalidate()
         }

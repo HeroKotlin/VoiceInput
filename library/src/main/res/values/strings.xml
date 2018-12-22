@@ -1,7 +1,7 @@
 <resources>
-    <string name="voice_input_guide_normal">按住说话</string>
-    <string name="voice_input_guide_delete">松手取消发送</string>
-    <string name="voice_input_guide_preview">松手试听</string>
-    <string name="voice_input_button_cancel">取消</string>
-    <string name="voice_input_button_send">发送</string>
+    <string name="voice_input_guide_label_normal">按住说话</string>
+    <string name="voice_input_guide_label_delete">松手取消发送</string>
+    <string name="voice_input_guide_label_preview">松手试听</string>
+    <string name="voice_input_cancel_button_title">取消</string>
+    <string name="voice_input_send_button_title">发送</string>
 </resources>
