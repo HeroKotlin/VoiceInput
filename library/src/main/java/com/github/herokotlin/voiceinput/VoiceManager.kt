@@ -10,7 +10,7 @@ import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
 
-class VoiceManager {
+internal class VoiceManager {
 
     companion object {
         const val LOG_TAG = "VoiceInput"
