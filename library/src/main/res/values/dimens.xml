@@ -12,19 +12,19 @@
     <dimen name="voice_input_delete_button_margin_left">40dp</dimen>
 
     <dimen name="voice_input_guide_label_margin_bottom">30dp</dimen>
-    <dimen name="voice_input_guide_label_text_size">15sp</dimen>
+    <dimen name="voice_input_guide_label_text_size">15dp</dimen>
 
     <dimen name="voice_input_duration_label_margin_bottom">30dp</dimen>
-    <dimen name="voice_input_duration_label_text_size">15sp</dimen>
+    <dimen name="voice_input_duration_label_text_size">15dp</dimen>
 
     <dimen name="voice_input_play_button_center_radius">37dp</dimen>
     <dimen name="voice_input_play_button_ring_width">3dp</dimen>
     <dimen name="voice_input_play_button_track_width">3dp</dimen>
 
     <dimen name="voice_input_progress_label_margin_bottom">30dp</dimen>
-    <dimen name="voice_input_progress_label_text_size">15sp</dimen>
+    <dimen name="voice_input_progress_label_text_size">15dp</dimen>
 
-    <dimen name="voice_input_footer_button_text_size">14sp</dimen>
+    <dimen name="voice_input_footer_button_text_size">14dp</dimen>
     <dimen name="voice_input_footer_button_padding_top">12dp</dimen>
     <dimen name="voice_input_footer_button_padding_bottom">12dp</dimen>
 </resources>
