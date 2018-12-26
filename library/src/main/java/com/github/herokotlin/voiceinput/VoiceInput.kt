@@ -125,16 +125,23 @@ class VoiceInput : FrameLayout {
         recordButton.callback = object: CircleViewCallback {
 
             override fun onTouchDown(circleView: CircleView) {
+                callback.onRecordButtonClick()
                 startRecord()
             }
 
             override fun onTouchUp(circleView: CircleView, inside: Boolean, isLongPress: Boolean) {
-                if (voiceManager.isRecording) {
-                    stopRecord()
+                if (!voiceManager.isRecording) {
+                    return
                 }
+                stopRecord()
             }
 
             override fun onTouchMove(circleView: CircleView, x: Float, y: Float) {
+
+                // 达到最大时长会自动停止
+                if (!voiceManager.isRecording) {
+                    return
+                }
 
                 val offsetY = y - recordButtonRadius
 
@@ -154,9 +161,13 @@ class VoiceInput : FrameLayout {
             }
         }
 
+        previewButton.callback = object: CircleViewCallback { }
+        deleteButton.callback = object: CircleViewCallback { }
+
         playButton.callback = object: CircleViewCallback {
 
             override fun onTouchDown(circleView: CircleView) {
+                callback.onPlayButtonClick()
                 circleView.centerColor = ContextCompat.getColor(context, R.color.voice_input_play_button_center_color_pressed)
                 circleView.invalidate()
             }

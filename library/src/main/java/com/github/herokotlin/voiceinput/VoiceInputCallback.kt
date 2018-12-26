@@ -12,6 +12,14 @@ interface VoiceInputCallback {
 
     }
 
+    fun onRecordButtonClick() {
+
+    }
+
+    fun onPlayButtonClick() {
+
+    }
+
     // 录音结束或点击发送时触发
     fun onFinishRecord(audioPath: String, audioDuration: Int) {
 
