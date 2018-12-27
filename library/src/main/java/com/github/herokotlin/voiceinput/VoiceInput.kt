@@ -18,6 +18,18 @@ class VoiceInput : FrameLayout {
 
     lateinit var callback: VoiceInputCallback
 
+    var isRecording = false
+
+        get() {
+            return voiceManager.isRecording
+        }
+
+    var isPlaying = false
+
+        get() {
+            return voiceManager.isPlaying
+        }
+
     private var voiceManager = VoiceManager()
 
     private var animator: ValueAnimator? = null
@@ -261,7 +273,7 @@ class VoiceInput : FrameLayout {
 
     }
 
-    private fun stopRecord() {
+    fun stopRecord() {
 
         voiceManager.stopRecord()
 
@@ -324,7 +336,7 @@ class VoiceInput : FrameLayout {
         }
     }
 
-    private fun stopPlay() {
+    fun stopPlay() {
 
         voiceManager.stopPlay()
 
