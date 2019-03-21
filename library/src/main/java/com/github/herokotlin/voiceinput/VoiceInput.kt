@@ -1,6 +1,7 @@
 package com.github.herokotlin.voiceinput
 
 import android.animation.ValueAnimator
+import android.app.Activity
 import android.content.Context
 import android.support.v4.content.ContextCompat
 import android.util.AttributeSet
@@ -18,13 +19,16 @@ class VoiceInput : FrameLayout {
 
     lateinit var callback: VoiceInputCallback
 
-    var isRecording = false
+    // 用于请求权限
+    var activity: Activity? = null
+
+    val isRecording: Boolean
 
         get() {
             return voiceManager.isRecording
         }
 
-    var isPlaying = false
+    val isPlaying: Boolean
 
         get() {
             return voiceManager.isPlaying
@@ -73,8 +77,8 @@ class VoiceInput : FrameLayout {
             }
             else {
                 deleteButton.centerColor = ContextCompat.getColor(context, R.color.voice_input_delete_button_bg_color_normal)
-                guideLabel.visibility = View.VISIBLE
-                durationLabel.visibility = View.GONE
+                guideLabel.visibility = View.GONE
+                durationLabel.visibility = View.VISIBLE
                 guideLabel.text = resources.getString(R.string.voice_input_guide_label_normal)
             }
             previewButton.invalidate()
@@ -117,7 +121,15 @@ class VoiceInput : FrameLayout {
     fun init(configuration: VoiceInputConfiguration, callback: VoiceInputCallback) {
         this.configuration = configuration
         this.callback = callback
-        voiceManager.configuration = configuration
+        voiceManager.fileDir = if (configuration.fileDir.isNotBlank()) configuration.fileDir else context.externalCacheDir.absolutePath
+        voiceManager.fileExtname = configuration.fileExtname
+        voiceManager.audioFormat = configuration.audioFormat
+        voiceManager.audioEncoder = configuration.audioEncoder
+        voiceManager.audioNumberOfChannels = configuration.audioNumberOfChannels
+        voiceManager.audioBitRate = configuration.audioBitRate
+        voiceManager.audioSampleRate = configuration.audioSampleRate
+        voiceManager.audioMinDuration = configuration.audioMinDuration
+        voiceManager.audioMaxDuration = configuration.audioMaxDuration
     }
 
     private fun init() {
@@ -142,9 +154,6 @@ class VoiceInput : FrameLayout {
             }
 
             override fun onTouchUp(circleView: CircleView, inside: Boolean, isLongPress: Boolean) {
-                if (!voiceManager.isRecording) {
-                    return
-                }
                 stopRecord()
             }
 
@@ -213,22 +222,27 @@ class VoiceInput : FrameLayout {
             cancel()
         }
 
-        sendButton.setOnClickListener {
-            send()
+        submitButton.setOnClickListener {
+            submit()
         }
 
-        voiceManager.onPermissionsGranted = {
+        val permission = voiceManager.permission
+        permission.onRequestPermissions = { activity, permissions, requestCode ->
+            callback.onRequestPermissions(activity, permissions, requestCode)
+        }
+        permission.onPermissionsNotGranted = {
+            callback.onPermissionsNotGranted()
+        }
+        permission.onPermissionsGranted = {
             callback.onPermissionsGranted()
         }
-        voiceManager.onPermissionsDenied = {
+        permission.onPermissionsDenied = {
             callback.onPermissionsDenied()
         }
-        voiceManager.onRecordWithoutPermissions = {
-            callback.onRecordWithoutPermissions()
+        permission.onExternalStorageNotWritable = {
+            callback.onExternalStorageNotWritable()
         }
-        voiceManager.onRecordWithoutExternalStorage = {
-            callback.onRecordWithoutExternalStorage()
-        }
+
         voiceManager.onRecordDurationLessThanMinDuration = {
             callback.onRecordDurationLessThanMinDuration()
         }
@@ -242,6 +256,10 @@ class VoiceInput : FrameLayout {
     }
 
     private fun startRecord() {
+
+        if (!requestPermissions()) {
+            return
+        }
 
         voiceManager.startRecord()
 
@@ -398,7 +416,7 @@ class VoiceInput : FrameLayout {
         isPreviewing = false
     }
 
-    private fun send() {
+    private fun submit() {
         stopPlay()
         isPreviewing = false
         callback.onFinishRecord(voiceManager.filePath, voiceManager.fileDuration)
@@ -428,14 +446,15 @@ class VoiceInput : FrameLayout {
      * 请求麦克风权限
      */
     fun requestPermissions(): Boolean {
-        return voiceManager.requestPermissions()
+        val context = activity ?: (context as Activity)
+        return voiceManager.permission.requestPermissions(context)
     }
 
     /**
      * 如果触发了用户授权，则必须在 Activity 级别实现 onRequestPermissionsResult 接口，并调此方法完成授权
      */
-    fun requestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        voiceManager.requestPermissionsResult(requestCode, permissions, grantResults)
+    fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        voiceManager.permission.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 
 }

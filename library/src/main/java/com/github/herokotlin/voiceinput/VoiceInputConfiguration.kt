@@ -1,14 +1,13 @@
 package com.github.herokotlin.voiceinput
 
-import android.content.Context
 import android.media.MediaRecorder
 
-abstract class VoiceInputConfiguration(val context: Context) {
+abstract class VoiceInputConfiguration {
 
     /**
      * 保存录音文件的目录
      */
-    var fileDir = context.externalCacheDir.absolutePath
+    var fileDir = ""
 
     /**
      * 文件扩展名
@@ -28,7 +27,7 @@ abstract class VoiceInputConfiguration(val context: Context) {
     /**
      * 双声道还是单声道
      */
-    var numberOfChannels = 2
+    var audioNumberOfChannels = 2
 
     /**
      * 码率
@@ -49,10 +48,5 @@ abstract class VoiceInputConfiguration(val context: Context) {
      * 支持的最长录音时长
      */
     var audioMaxDuration = 60 * 1000
-
-    /**
-     * 请求权限
-     */
-    abstract fun requestPermissions(permissions: List<String>, requestCode: Int): Boolean
 
 }

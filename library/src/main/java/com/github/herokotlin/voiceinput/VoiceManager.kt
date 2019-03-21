@@ -1,10 +1,9 @@
 package com.github.herokotlin.voiceinput
 
-import android.content.pm.PackageManager
 import android.media.MediaPlayer
 import android.media.MediaRecorder
-import android.os.Environment
 import android.util.Log
+import com.github.herokotlin.permission.Permission
 import java.io.File
 import java.io.IOException
 import java.text.SimpleDateFormat
@@ -14,10 +13,52 @@ internal class VoiceManager {
 
     companion object {
         const val LOG_TAG = "VoiceInput"
-        const val PERMISSION_REQUEST_CODE = 12134
     }
 
-    lateinit var configuration: VoiceInputConfiguration
+    /**
+     * 保存录音文件的目录
+     */
+    var fileDir = ""
+
+    /**
+     * 文件扩展名
+     */
+    var fileExtname = ""
+
+    /**
+     * 音频格式
+     */
+    var audioFormat = MediaRecorder.OutputFormat.MPEG_4
+
+    /**
+     * 音频编码器
+     */
+    var audioEncoder = MediaRecorder.AudioEncoder.HE_AAC
+
+    /**
+     * 双声道还是单声道
+     */
+    var audioNumberOfChannels = 2
+
+    /**
+     * 码率
+     */
+    var audioBitRate = 320000
+
+    /**
+     * 采样率
+     */
+    var audioSampleRate = 44100
+
+    /**
+     * 支持的最短录音时长
+     */
+    var audioMinDuration = 1000
+
+    /**
+     * 支持的最长录音时长
+     */
+    var audioMaxDuration = 60 * 1000
 
     /**
      * 是否正在录音
@@ -40,33 +81,29 @@ internal class VoiceManager {
     var fileDuration = 0
 
     // 外部实时读取的录音时长
-    var duration: Long = 0
+    val duration: Long
 
         get() {
             val now = System.currentTimeMillis()
             var duration = now - recordStartTime
-            if (duration > configuration.audioMaxDuration) {
-                duration = configuration.audioMaxDuration.toLong()
+            if (duration > audioMaxDuration) {
+                duration = audioMaxDuration.toLong()
                 stopRecord()
             }
             return duration
         }
 
-
     // 外部实时读取的播放进度
-    var progress: Long = 0
+    val progress: Long
 
         get() {
             return if (player != null) player!!.currentPosition.toLong() else 0
         }
 
-    var onPermissionsGranted: (() -> Unit)? = null
-
-    var onPermissionsDenied: (() -> Unit)? = null
-
-    var onRecordWithoutPermissions: (() -> Unit)? = null
-
-    var onRecordWithoutExternalStorage: (() -> Unit)? = null
+    val permission = Permission(89190905, listOf(
+        android.Manifest.permission.RECORD_AUDIO,
+        android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+    ))
 
     var onRecordDurationLessThanMinDuration: (() -> Unit)? = null
 
@@ -80,60 +117,13 @@ internal class VoiceManager {
 
     private var recordStartTime: Long = 0
 
-    /**
-     * 判断是否有权限录音，如没有，发起授权请求
-     */
-    fun requestPermissions(): Boolean {
-        return configuration.requestPermissions(
-            listOf(
-                android.Manifest.permission.RECORD_AUDIO,
-                android.Manifest.permission.WRITE_EXTERNAL_STORAGE
-            ),
-            PERMISSION_REQUEST_CODE
-        )
-    }
-
-    /**
-     * 如果触发了用户授权，则必须在 Activity 级别实现 onRequestPermissionsResult 接口，并调此方法完成授权
-     */
-    fun requestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-
-        if (requestCode != PERMISSION_REQUEST_CODE) {
-            return
-        }
-
-        for (i in 0 until permissions.size) {
-            if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
-                onPermissionsDenied?.invoke()
-                return
-            }
-        }
-
-        onPermissionsGranted?.invoke()
-
-    }
-
-    /**
-     * 检查外部存储是否可用，如不可用，无法录音
-     */
-    private fun checkExternalStorageAvailable(): Boolean {
-        val state = Environment.getExternalStorageState()
-        return state == Environment.MEDIA_MOUNTED
-    }
-
     fun startRecord() {
 
-        if (!requestPermissions()) {
-            onRecordWithoutPermissions?.invoke()
+        if (!permission.checkExternalStorageWritable()) {
             return
         }
 
-        if (!checkExternalStorageAvailable()) {
-            onRecordWithoutExternalStorage?.invoke()
-            return
-        }
-
-        filePath = getFilePath(configuration.fileDir, configuration.fileExtname)
+        filePath = getFilePath(fileDir, fileExtname)
 
         fileDuration = 0
 
@@ -141,11 +131,11 @@ internal class VoiceManager {
 
         recorder.setAudioSource(MediaRecorder.AudioSource.MIC)
 
-        recorder.setOutputFormat(configuration.audioFormat)
-        recorder.setAudioEncoder(configuration.audioEncoder)
-        recorder.setAudioChannels(configuration.numberOfChannels)
-        recorder.setAudioEncodingBitRate(configuration.audioBitRate)
-        recorder.setAudioSamplingRate(configuration.audioSampleRate)
+        recorder.setOutputFormat(audioFormat)
+        recorder.setAudioEncoder(audioEncoder)
+        recorder.setAudioChannels(audioNumberOfChannels)
+        recorder.setAudioEncodingBitRate(audioBitRate)
+        recorder.setAudioSamplingRate(audioSampleRate)
 
         recorder.setOutputFile(filePath)
 
@@ -215,11 +205,11 @@ internal class VoiceManager {
             }
             catch (e: Exception) {
                 isSuccess = false
-                onRecordWithoutPermissions?.invoke()
+                permission.onPermissionsNotGranted?.invoke()
             }
         }
 
-        if (isSuccess && fileDuration < configuration.audioMinDuration) {
+        if (isSuccess && fileDuration < audioMinDuration) {
             onRecordDurationLessThanMinDuration?.invoke()
             isSuccess = false
         }

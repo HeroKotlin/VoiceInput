@@ -1,11 +1,9 @@
 package com.github.herokotlin.voiceinput
 
+import android.app.Activity
+import android.support.v4.app.ActivityCompat
+
 interface VoiceInputCallback {
-
-    // 点击录音按钮时，发现没权限
-    fun onRecordWithoutPermissions() {
-
-    }
 
     // 预览发生变化
     fun onPreviewingChange(isPreviewing: Boolean) {
@@ -30,18 +28,23 @@ interface VoiceInputCallback {
 
     }
 
-    // 没有外部存储可用
-    fun onRecordWithoutExternalStorage() {
-
+    fun onRequestPermissions(activity: Activity, permissions: Array<out String>, requestCode: Int) {
+        ActivityCompat.requestPermissions(activity, permissions, requestCode)
     }
 
-    // 用户点击同意授权
     fun onPermissionsGranted() {
 
     }
 
-    // 用户点击拒绝授权
     fun onPermissionsDenied() {
+
+    }
+
+    fun onPermissionsNotGranted() {
+
+    }
+
+    fun onExternalStorageNotWritable() {
 
     }
 
