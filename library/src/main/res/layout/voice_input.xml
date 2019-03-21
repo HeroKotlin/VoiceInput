@@ -141,6 +141,7 @@
             android:text="@string/voice_input_cancel_button_title"
             android:textColor="@color/voice_input_footer_button_text_color"
             android:textSize="@dimen/voice_input_footer_button_text_size"
+            android:textAllCaps="false"
             android:background="@drawable/voice_input_footer_button"
             style="?android:attr/borderlessButtonStyle"/>
 
@@ -155,6 +156,7 @@
             android:text="@string/voice_input_send_button_title"
             android:textColor="@color/voice_input_footer_button_text_color"
             android:textSize="@dimen/voice_input_footer_button_text_size"
+            android:textAllCaps="false"
             android:background="@drawable/voice_input_footer_button"
             style="?android:attr/borderlessButtonStyle"/>
 
