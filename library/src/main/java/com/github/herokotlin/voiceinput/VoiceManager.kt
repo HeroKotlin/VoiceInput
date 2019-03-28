@@ -100,7 +100,7 @@ internal class VoiceManager {
             return if (player != null) player!!.currentPosition.toLong() else 0
         }
 
-    val permission = Permission(190905, listOf(
+    val permission = Permission(19905, listOf(
         android.Manifest.permission.RECORD_AUDIO,
         android.Manifest.permission.WRITE_EXTERNAL_STORAGE
     ))
